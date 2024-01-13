@@ -9,11 +9,17 @@ import { compareSync, genSaltSync, hashSync } from 'bcryptjs';
 import { IUser } from './users.interface';
 import { User } from 'src/decorator/customize';
 import aqp from 'api-query-params';
+import ms from 'ms';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { response } from 'express';
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(UserM.name)
     private userModel: SoftDeleteModel<UserDocument>,
+    private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   getHashPassword = (password: string) => {
@@ -135,6 +141,9 @@ export class UsersService {
   findOneByUsername(username: string) {
     return this.userModel.findOne({ username });
   }
+  findOneByEmail(email: string) {
+    return this.userModel.findOne({ email });
+  }
 
   isValidPassword(password: string, hash: string) {
     return compareSync(password, hash);
@@ -144,6 +153,16 @@ export class UsersService {
     return await this.userModel.updateOne(
       {
         _id,
+      },
+      {
+        refreshToken,
+      },
+    );
+  };
+  updateUserTokenWithGoogle = async (refreshToken: string, email: string) => {
+    return await this.userModel.updateOne(
+      {
+        email,
       },
       {
         refreshToken,
@@ -161,5 +180,20 @@ export class UsersService {
       { username },
       { password: hashNewPassword },
     );
+  };
+  createRefreshToken = (payload: any) => {
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+      expiresIn:
+        ms(this.configService.get<string>('JWT_REFRESH_EXPIRE')) / 1000,
+    });
+    return refresh_token;
+  };
+  createANewUser = async (email: string, name: string) => {
+    let newUser = await this.userModel.create({
+      email,
+      fullname: name,
+    });
+    return newUser;
   };
 }
