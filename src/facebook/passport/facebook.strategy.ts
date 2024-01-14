@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy } from 'passport-facebook';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
+export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   constructor(
     private configService: ConfigService,
     private usersService: UsersService,
   ) {
     super({
-      clientID:
-        '612136221181-cdi6lu7hfd7vup2hd8vjvvbhc8q0pm8l.apps.googleusercontent.com',
-      clientSecret: configService.get<string>('GOOGLE_APP_CLIENT_SECRET'),
-      callbackURL: configService.get<string>('GOOGLE_REDIRECT'),
-      scope: ['profile', 'email'],
+      clientID: '393993129750751',
+      clientSecret: 'caabe9dd5796bb6ff36178ef1a1a69f8',
+      callbackURL: 'http://localhost:8000/facebook/redirect',
+      scope: 'email',
+      profileFields: ['emails', 'name', 'id'],
     });
   }
 
@@ -23,10 +23,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     accessToken: string,
     refreshToken: string,
     profile: any,
-    done: VerifyCallback,
+    done: any,
   ): Promise<any> {
     console.log('>>> check profile: ', profile);
-    const type = 'GOOGLE';
+    const type = 'FACEBOOK';
     let dataRaw = {
       fullname: profile.displayName,
       username:
@@ -34,7 +34,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
           ? profile.emails[0].value
           : profile.id,
     };
-    let user = this.usersService.upsertUserGoogle(type, dataRaw);
+    let user = this.usersService.upsertUserFacebook(type, dataRaw);
     done(null, user);
   }
 }

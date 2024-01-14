@@ -9,8 +9,6 @@ export class User {
   @Prop()
   username: string;
   @Prop()
-  email: string;
-  @Prop()
   password: string;
   @Prop()
   fullname: string;
@@ -22,7 +20,8 @@ export class User {
   refreshToken: string;
   @Prop()
   createdAt: Date;
-
+  @Prop({ default: 'LOCAL' })
+  type: string;
   @Prop({ type: Object })
   createdBy: {
     _id: mongoose.Schema.Types.ObjectId;

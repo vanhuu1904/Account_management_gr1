@@ -9,6 +9,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { softDeletePlugin } from 'soft-delete-plugin-mongoose';
 import { GoogleModule } from './google/google.module';
+import { FacebookModule } from './facebook/facebook.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { GoogleModule } from './google/google.module';
     UsersModule,
     AuthModule,
     GoogleModule,
+    FacebookModule,
   ],
   controllers: [AppController],
   providers: [AppService],

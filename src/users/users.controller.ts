@@ -27,6 +27,11 @@ export class UsersController {
       createdAt: newUser?.createdAt,
     };
   }
+  @ResponseMessage('Create a new User')
+  @Post('bulk-create')
+  async bulk_create(@Body() data: any, @User() user: IUser) {
+    return await this.usersService.bulk_create(data, user);
+  }
 
   @Get()
   @ResponseMessage('Fetch user with paginate')

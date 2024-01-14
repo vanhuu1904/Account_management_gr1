@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
-import { GoogleService } from './google.service';
-import { GoogleController } from './google.controller';
-import { GoogleStrategy } from './passport/google.strategy';
-import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from 'src/auth/passport/jwt.strategy';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import ms from 'ms';
+import { FacebookService } from './facebook.service';
+import { FacebookController } from './facebook.controller';
+import { FacebookStrategy } from './passport/facebook.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import ms from 'ms';
 
 @Module({
   imports: [
@@ -24,7 +23,7 @@ import { AuthModule } from 'src/auth/auth.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [GoogleService, GoogleStrategy],
-  controllers: [GoogleController],
+  controllers: [FacebookController],
+  providers: [FacebookService, FacebookStrategy],
 })
-export class GoogleModule {}
+export class FacebookModule {}

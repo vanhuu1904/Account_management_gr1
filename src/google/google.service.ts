@@ -15,10 +15,24 @@ export class GoogleService {
     private configService: ConfigService,
     private authService: AuthService,
   ) {}
+  googleLogin(req) {
+    if (!req.user) {
+      return 'No user from google';
+    }
+
+    return {
+      message: 'User information from google',
+      user: req.user,
+    };
+  }
   loginGoogle = async (email: string, name: string, response: Response) => {
-    const userExists = await this.usersService.findOneByEmail(email);
-    if (!userExists) {
-      const createdUser = this.usersService.createANewUser(email, name);
+    const userExists = await this.usersService.findOneByUsername(email);
+    if (!userExists || userExists.type === 'FACEBOOK') {
+      const createdUser = this.usersService.createANewUser(
+        email,
+        name,
+        'GOOGLE',
+      );
       const payload = {
         sub: 'token login',
         iss: 'from server',

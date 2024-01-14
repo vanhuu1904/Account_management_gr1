@@ -50,6 +50,29 @@ export class UsersService {
     });
     return newUser;
   }
+  async bulk_create(data, @User() user: IUser) {
+    let res = data.map(async (index, item: any) => {
+      const isExist = await this.userModel.findOne({ username: item.username });
+      if (isExist) {
+        throw new BadRequestException(
+          `Username: ${item.username} đã tồn tại. Vui lòng sử dụng username khác`,
+        );
+      }
+      const hashPassword = this.getHashPassword(item.password);
+      let newUser = await this.userModel.create({
+        username: item.username,
+        password: hashPassword,
+        fullname: item.fullname,
+        studentcode: item.studentcode,
+        address: item.address,
+        createBy: {
+          _id: user._id,
+          username: user.username,
+        },
+      });
+    });
+    return res;
+  }
 
   async findAll(currentPage: number, limit: number, qs: string) {
     const { filter, sort, population } = aqp(qs);
@@ -141,9 +164,6 @@ export class UsersService {
   findOneByUsername(username: string) {
     return this.userModel.findOne({ username });
   }
-  findOneByEmail(email: string) {
-    return this.userModel.findOne({ email });
-  }
 
   isValidPassword(password: string, hash: string) {
     return compareSync(password, hash);
@@ -162,7 +182,7 @@ export class UsersService {
   updateUserTokenWithGoogle = async (refreshToken: string, email: string) => {
     return await this.userModel.updateOne(
       {
-        email,
+        username: email,
       },
       {
         refreshToken,
@@ -189,11 +209,54 @@ export class UsersService {
     });
     return refresh_token;
   };
-  createANewUser = async (email: string, name: string) => {
+  createANewUser = async (username: string, name: string, type: string) => {
     let newUser = await this.userModel.create({
-      email,
+      username,
       fullname: name,
+      type: type,
     });
     return newUser;
+  };
+  upsertUserGoogle = async (typeAcc, dataRaw) => {
+    try {
+      let user = null;
+      user = await this.userModel.findOne({
+        username: dataRaw.username,
+      });
+      if (!user || user.type == 'FACEBOOK') {
+        // create a new account
+        user = await this.userModel.create({
+          username: dataRaw.username,
+          fullname: dataRaw.fullname,
+          type: typeAcc,
+        });
+        return user;
+      } else {
+        return user;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  upsertUserFacebook = async (typeAcc, dataRaw) => {
+    try {
+      let user = null;
+      user = await this.userModel.findOne({
+        username: dataRaw.username,
+      });
+      if (!user || user.type == 'GOOGLE') {
+        // create a new account
+        user = await this.userModel.create({
+          username: dataRaw.username,
+          fullname: dataRaw.fullname,
+          type: typeAcc,
+        });
+        return user;
+      } else {
+        return user;
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 }
